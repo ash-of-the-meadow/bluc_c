@@ -1,6 +1,7 @@
 #ifndef JMS_ASTNODE_H
 #define JMS_ASTNODE_H
 #include "../jms_utils/jms_vector.h"
+#include "../jms_utils/jms_str.h"
 #include "jms_astNodeType.h"
 
 struct jms_astNode;

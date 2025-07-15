@@ -6,7 +6,7 @@
 
 struct jms_vector;
 typedef struct jms_vector jms_vector;
-
+typedef (void)()(int*) test;
 void jms_vec_static_defaultDestructor(void* self);
 
 JMS_OWNED_PTR(jms_vector)
