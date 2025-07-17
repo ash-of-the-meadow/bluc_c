@@ -131,7 +131,7 @@ int run_program(int argc, char* argv[])
     fflush(stdout);
     fflush(stderr);
     
-    printf("TESTING THAT VS CODE UPDATED FILE\n");
+    printf("[%s]: TESTING THAT VS CODE UPDATED FILE\n", __FUNCTION__);
 
     return 0;
 }

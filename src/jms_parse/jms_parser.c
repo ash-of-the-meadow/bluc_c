@@ -67,7 +67,7 @@ JMS_XFER_PTR(jms_parser)
         // TODO: add subparsers to the vector
         jms_parser_class *subParser = jms_parser_class_init(self);
 
-        jms_vec_add(self->subParsers, subParser, jms_parser_class_del);
+        jms_vec_add(self->subParsers, subParser, (jms_vec_destructorDelegate)jms_parser_class_del);
     }
 
     self->curTokenIndex = 0;
