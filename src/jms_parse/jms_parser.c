@@ -1,13 +1,13 @@
 #include "jms_parser.h"
 #include "../jms_utils/jms_stdint.h"
-#include "jms_astNode.h"
+#include "jms_token.h"
 #include <stdlib.h>
 #include <stdio.h>
 #include "jms_statements/jms_parser_class.h"
 
 struct jms_parser
 {
-    JMS_BORROWED_PTR(jms_vector)
+    JMS_XFER_PTR(jms_vector)
         tokens;
     JMS_OWNED_PTR(jms_vector)
         subParsers;
@@ -107,7 +107,7 @@ static bool jms_parser_canParseRule(jms_parser* self)
  * @brief Parses the tokens in the lexedTokens of the parser.
  * 
  * @param self The parser instance.
- * @return A vector jms_astNode representing the abstract syntax tree.
+ * @return A vector jms_token representing the abstract syntax tree.
  */
 JMS_XFER_PTR(jms_vector) jms_parser_parseBase(jms_parser* self)
 {
@@ -119,7 +119,7 @@ JMS_XFER_PTR(jms_vector) jms_parser_parseBase(jms_parser* self)
 
     // TODO: Example parsing logic (to be replaced with actual implementation)
     JMS_XFER_PTR(jms_vector)
-        ast = jms_vec_init(sizeof(jms_astNode*));
+        ast = jms_vec_init(sizeof(jms_token*));
     i32
         tokenCount = jms_vec_elemCount(self->tokens);
 
@@ -149,4 +149,39 @@ JMS_XFER_PTR(jms_vector) jms_parser_parse(jms_parser* self)
 
     // Call the parse function from the vtable
     return self->parse(self);
+}
+
+ui32 jms_parser_getCurTokenIndex(jms_parser* self)
+{
+    if (!self)
+    {
+        fprintf(stderr, "Error: Invalid parser.\n");
+        return 0;
+    }
+
+    return self->curTokenIndex;
+}
+
+JMS_OWNED_PTR(jms_resultType) jms_parser_peek(jms_parser* self, i32 index)
+{
+    if (!self || !self->tokens)
+    {
+        fprintf(stderr, "Error: Invalid parser or tokens.\n");
+        return NULL;
+    }
+
+    i32 tokenCount = jms_vec_elemCount(self->tokens);
+    if (index < 0 || index >= tokenCount)
+    {
+        // Out of bounds
+        return jms_resultType_init_bool(false);
+    }
+
+    jms_token* token = (jms_token*)jms_vec_get(self->tokens, index);
+    if (!token)
+    {
+        return jms_resultType_init_bool(false);
+    }
+
+    return jms_resultType_init_bool_voidPtr(true, token);
 }

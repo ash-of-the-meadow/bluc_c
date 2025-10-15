@@ -1,9 +1,8 @@
-// filepath: /mnt/c/Users/John/documents/github/bluc_c/src/jms_parse/jms_statements/jms_parser_class.c
 #include "jms_parser_class.h"
 #include <stdlib.h>
 #include <assert.h>
 
-// Definition of the jms_parser_class structure
+// The parser for "class" lexemes, not the class for the "parser" base.
 struct jms_parser_class
 {
     jms_parser *parent;

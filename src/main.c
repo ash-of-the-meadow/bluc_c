@@ -7,7 +7,7 @@
 #include "jms_tests/jms_unitTests.h"
 #include "jms_lex.h"
 #include "jms_utils/jms_str.h"
-#include "jms_parse/jms_astNode.h"
+#include "jms_parse/jms_token.h"
 
 #define JMS_UNIT_TESTS_ON
 
@@ -104,14 +104,14 @@ int run_program(int argc, char* argv[])
             jms_vec_elemCount(ast));
         for (size_t i = 0; i < jms_vec_elemCount(ast); i++)
         {
-            JMS_BORROWED_PTR(jms_astNode)
+            JMS_BORROWED_PTR(jms_token)
                 elem = jms_vec_get(ast, i);
 
             // This will look much nicer in the self-hosted compiler:
             //
             //      var cStr = elem.getText().cStr();
             JMS_BORROWED_PTR(char)
-                cStr = jms_str_cStr(jms_astNode_getText(elem));
+                cStr = jms_str_cStr(jms_token_getText(elem));
                 
             printf("main: ast node %zu: %s\n",
                         i, cStr);
@@ -131,7 +131,7 @@ int run_program(int argc, char* argv[])
     fflush(stdout);
     fflush(stderr);
     
-    printf("[%s]: TESTING THAT VS CODE UPDATED FILE\n", __FUNCTION__);
+    printf("[%s]: TESTING THAT VS CODE UPDATED FILE #2\n", __FUNCTION__);
 
     return 0;
 }
