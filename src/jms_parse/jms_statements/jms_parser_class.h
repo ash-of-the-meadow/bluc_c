@@ -2,7 +2,7 @@
 #define JMS_PARSER_CLASS_H
 #include "../jms_parser.h"
 
-// Parser for the "Class" statement.
+// The parser for "class" lexemes, *not* the class for the "parser" base.
 struct jms_parser_class;
 typedef struct jms_parser_class jms_parser_class;
 

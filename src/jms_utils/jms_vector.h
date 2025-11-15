@@ -6,7 +6,9 @@
 
 struct jms_vector;
 typedef struct jms_vector jms_vector;
-typedef void (*jms_vec_destructorDelegate) (void*);
+typedef void (*jms_vec_destructorDelegate) (void* element);
+typedef i32 (*jms_vec_comparerDelegate) (void* elementA, void* elementB);
+
 void jms_vec_static_defaultDestructor(void* self);
 
 JMS_OWNED_PTR(jms_vector)
@@ -62,6 +64,12 @@ void*       jms_vec_find        (jms_vector* self, void* searchCriteria, bool (*
  */
 JMS_BORROWED_PTR(jms_vector)
             jms_vec_where     (jms_vector* self, void* searchCriteria, bool (*comparer)(void*, void*));
+
+/**
+ * @brief Sorts the vector using the given sorter function.
+ */
+void        jms_vec_sort      (jms_vector* self, jms_vec_comparerDelegate sorter);
+
 /**
  * @brief Delete the value at *index* from the vector. Free's the pointer.
  */

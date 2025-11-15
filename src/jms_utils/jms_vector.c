@@ -248,6 +248,46 @@ static void jms_vec_shrink(jms_vector* self)
         sizeof(jms_vec_chunk));
 }
 
+// Helper function to partition the array
+static int32_t partition(jms_vector *self, int32_t low, int32_t high, jms_vec_comparerDelegate sorter) {
+    void* pivot = self->elements[high].data; // Choose the last element as the pivot
+    int32_t i = low - 1;
+
+    for (int32_t j = low; j < high; j++) {
+        if (sorter(self->elements[j].data, pivot) <= 0) {
+            i++;
+            // Swap elements[i] and elements[j]
+            void* temp = self->elements[i].data;
+            self->elements[i].data = self->elements[j].data;
+            self->elements[j].data = temp;
+        }
+    }
+
+    // Swap elements[i + 1] and elements[high] (pivot)
+    void* temp = self->elements[i + 1].data;
+    self->elements[i + 1].data = self->elements[high].data;
+    self->elements[high].data = temp;
+
+    return i + 1;
+}
+
+// Recursive quicksort function
+static void quicksort(jms_vector *self, int32_t low, int32_t high, jms_vec_comparerDelegate sorter) {
+    if (low < high) {
+        int32_t pi = partition(self, low, high, sorter);
+
+        // Recursively sort elements before and after partition
+        quicksort(self, low, pi - 1, sorter);
+        quicksort(self, pi + 1, high, sorter);
+    }
+}
+
+void jms_vec_sort(jms_vector *self, jms_vec_comparerDelegate sorter) {
+    if (self->lastElemIndex > 0) {
+        quicksort(self, 0, self->lastElemIndex - 1, sorter);
+    }
+}
+
 void jms_vec_rem(jms_vector* self, int32_t index)
 {
     void* data = self->elements[index].data;

@@ -26,6 +26,22 @@ JMS_XFER_PTR(jms_vector)    jms_parser_parse(jms_parser* self);
  */
 ui32                        jms_parser_getCurTokenIndex(jms_parser* self);
 
+/**
+ * @brief - Returns the token at the parser's current token index.
+ */
+JMS_BORROWED_PTR(jms_token) jms_parser_getCurToken(jms_parser* self);
+
+/**
+ * @brief - Gets the precedence/binding-power of this parser/subparser. Lower values are
+ *          higher priority. May be a negative value.
+ */
+i32 jms_parser_getPrecedence(jms_parser* self);
+
+/**
+ * @brief - Sets the precedence/binding-power of this parser/subparser. Lower values are
+ *          higher priority. May be a negative value.
+ */
+void jms_parser_setPrecedence(jms_parser* self, i32 precedence);
 
 /**
  * @brief - Attempts to peek at the token in the given location. If the function fails,

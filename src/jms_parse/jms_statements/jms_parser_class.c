@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <assert.h>
 
-// The parser for "class" lexemes, not the class for the "parser" base.
+// The parser for "class" lexemes, *not* the class for the "parser" base.
 struct jms_parser_class
 {
     jms_parser *parent;

@@ -72,10 +72,8 @@ JMS_XFER_PTR(jms_parser)
 
     self->curTokenIndex = 0;
     
-    // The base parser itself has the highest precedence.
-    //  It shouldn't matter, as the base parser shouldn't
-    //  be added to the list of "subparsers".
-    self->precedence = 0;
+    // The base parser itself should have the highest precedence.
+    self->precedence = -1;
 
     // Set the default vtable for this parser. If a sub-class
     //  overrides this, it will do so after this init function
@@ -117,7 +115,6 @@ JMS_XFER_PTR(jms_vector) jms_parser_parseBase(jms_parser* self)
         return NULL;
     }
 
-    // TODO: Example parsing logic (to be replaced with actual implementation)
     JMS_XFER_PTR(jms_vector)
         ast = jms_vec_init(sizeof(jms_token*));
     i32
@@ -160,6 +157,26 @@ ui32 jms_parser_getCurTokenIndex(jms_parser* self)
     }
 
     return self->curTokenIndex;
+}
+
+JMS_BORROWED_PTR(jms_token) jms_parser_getCurToken(jms_parser* self)
+{
+    if (!self || !self->tokens)
+    {
+        fprintf(stderr, "Error: Invalid parser or tokens.\n");
+        return NULL;
+    }
+
+    i32 tokenCount = jms_vec_elemCount(self->tokens);
+    if (self->curTokenIndex >= tokenCount
+        || self->curTokenIndex < 0)
+    {
+        // Out of bounds
+        return NULL;
+    }
+
+    jms_token* token = (jms_token*)jms_vec_get(self->tokens, self->curTokenIndex);
+    return token;
 }
 
 JMS_OWNED_PTR(jms_resultType) jms_parser_peek(jms_parser* self, i32 index)
