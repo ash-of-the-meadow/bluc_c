@@ -5,6 +5,8 @@
         "jms_strutil.h": "c",
         "jms_lex.h": "c",
         "jms_str.h": "c",
-        "jms_stdint.h": "c"
+        "jms_stdint.h": "c",
+        "jms_parser_vardecl.h": "c",
+        "jms_resulttype.h": "c"
     }
 }

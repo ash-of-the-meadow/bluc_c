@@ -1,0 +1,91 @@
+module demo;
+
+uses system.io;
+
+fn main() : i32
+{
+    println("Hello, world!");
+
+    runGenericsTests();
+    return 0;
+}
+
+fn runGenericsTests()
+{
+    // can omit {} for parameterless constructor
+    var intList = new List<i32*>;
+    
+    intList.add(new i32{10});
+    intList.add(new i32{20});
+    intList.add(new i32{30});
+
+    foreach (var i in intList)
+    {
+        println($"value: {*i}");
+    }
+
+    // intList automatically free'd when out of scope
+}
+
+class Person
+{
+    private var
+        // declare 3 vars with same type
+        fName,, lName,, nickName : String,
+
+        // same statement, different type
+        age : i32;
+
+    public fn init(fName,, lName,, nickName : const String, age : i32)
+    {
+        this.fName = fName;
+        this.lName = lName;
+        this.age = age;
+    }
+}
+
+// restrict type of TData and TAssoc to be descendants of a pointer type
+//  (Ptr is a reserved type used to reference pointer types)
+class BasicAssocVector<TData,, TAssoc : Ptr>
+{
+    private
+        // can alternate between < or ( when inside a generics specifier,
+        //  for readability
+        rawVector: Vector<Tuple(int, String)>,
+
+        // to demonstrate `delete`
+        unnecessaryPtr: i32*;
+        
+    public fn init()
+    {
+        // since type is fully specified, "new" is syntactic
+        //  sugar for "new Vector<Tuple(TData, TAssoc)>{}" --
+        //  like C#.
+        this.rawVector = new;
+
+        // syntactic sugar for new<i32>{42}. would not be
+        //  possible if we did "var ptr = new{42}" since
+        //  the latter doesn't have a type defined.
+        this.unnecessaryPtr = new{42};
+    }
+
+    public fn del()
+    {
+        delete this.unnecessaryPtr;
+    }
+
+    public fn add(elemData : TData, associatedData : TAssoc)
+    {
+        // java-style "diamond operator"
+        this.add(new Tuple<>{elemData, associatedData});
+    }
+
+    // method / function overloading
+    public fn add(element : Tuple<TData, TAssoc>)
+    {
+        this.rawVector.add(element);
+    }
+
+    // .. other class methods here .. //
+
+}   //} <-- fix basic txt-file brace-matching of visual studio code
