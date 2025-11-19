@@ -120,13 +120,14 @@ static JMS_XFER_PTR(jms_vector) jms_lex(
         multiTokenLexemesVec = jms_vec_init(sizeof(char*));
 
     // "Special character" lexemes which will *definitely* be a single character.
-    jms_vec_addAll(singleTokenLexemesVec, 9, NULL,
-                        "(", ")", "{", "}", "[", "]", ";", ",", ".");
+    jms_vec_addAll(singleTokenLexemesVec, 8, NULL,
+                        "(", ")", "{", "}", "[", "]", ";", ".");
 
     // "Special character" lexemes which *may* be multiple characters.
-    jms_vec_addAll(multiTokenLexemesVec, 19, NULL,
+    jms_vec_addAll(multiTokenLexemesVec, 23, NULL,
                         "=", "==", "!=", "+=", "-=", "*=", "/=", "%=", "<=", ">=",
-                        "&&", "||", "++", "--", "\\", "\\\\", "\r", "\n", "\t", "!");
+                        "&&", "||", "++", "--", "\\", "\\\\", "\r", "\n", "\t", "!",
+                        ",,", ",", "<", ">");
 
     JMS_OWNED_PTR(jms_str)
         wordSoFar = jms_str_init("");
