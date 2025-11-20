@@ -1,6 +1,7 @@
 #include "jms_parser_stmt.h"
 #include "../../jms_utils/jms_vector.h"
 #include "../jms_parser.h"
+#include "jms_parser_varDecl.h"
 #include <stdbool.h>
 #include <stdlib.h>
 
