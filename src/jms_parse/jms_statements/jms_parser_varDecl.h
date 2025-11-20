@@ -43,6 +43,8 @@ JMS_XFER_PTR(jms_vector)
 /**
  * @brief Checks if the current token matches a variable declaration.
  * 
+ * Pre-condition: curTokenIndex points to the start of a potential variable declaration.
+ * 
  * @param self The subparser instance.
  * @return true if a variable declaration can be parsed at this location.
  */

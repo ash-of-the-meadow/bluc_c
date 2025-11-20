@@ -16,5 +16,6 @@ void            jms_token_del       (jms_token* self);
 JMS_BORROWED_PTR(jms_str)       jms_token_getText     (jms_token* self);
 JMS_BORROWED_PTR(jms_vector)    jms_token_getChildren (jms_token* self);
 void                            jms_token_addChild    (jms_token* self, jms_token* child);
+jms_tokenType                   jms_token_getType     (jms_token* self);
 
 #endif

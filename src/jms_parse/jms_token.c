@@ -10,7 +10,7 @@ struct jms_token
     /**
      * Basically the class ID for this type of node.
      */
-    jms_tokenType             nodeTypeID;
+    jms_tokenType             tokenTypeId;
 
     /**
      * The text of the immediate node, as it appears in the source code.
@@ -18,15 +18,16 @@ struct jms_token
      *  the class name and body would be "children" of this node.)
      */
     JMS_OWNED_PTR(jms_str)          text;
+    
     JMS_BORROWED_PTR(jms_token)     parent;
     JMS_OWNED_PTR(jms_vector)       children;
 };
 
-jms_token* jms_token_init(jms_tokenType nodeType, char* text, JMS_OWNED_PTR(jms_token) parent)
+jms_token* jms_token_init(jms_tokenType tokenType, char* text, JMS_OWNED_PTR(jms_token) parent)
 {
     jms_token* self = malloc(sizeof(jms_token));
 
-    self->nodeTypeID = nodeType;
+    self->tokenTypeId = tokenType;
     self->text       = jms_str_init(text);
     self->parent     = parent;
     self->children   = jms_vec_init(sizeof(jms_token*));
