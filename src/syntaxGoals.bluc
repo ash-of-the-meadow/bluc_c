@@ -24,6 +24,8 @@ fn runGenericsTests()
         println($"value: {*i}");
     }
 
+    var basicAssoc = new BasicAssocVector<int, String>;
+
     // intList automatically free'd when out of scope
 }
 
@@ -51,7 +53,7 @@ class BasicAssocVector<TData,, TAssoc : Ptr>
     private
         // can alternate between < or ( when inside a generics specifier,
         //  for readability
-        rawVector: Vector<Tuple(int, String)>,
+        rawVector: Vector<Tuple(TData, TAssoc)>,
 
         // to demonstrate `delete`
         unnecessaryPtr: i32*;
