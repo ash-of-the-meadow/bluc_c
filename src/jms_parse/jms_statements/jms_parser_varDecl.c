@@ -1,7 +1,21 @@
 #include "jms_parser_varDecl.h"
+#include "../jms_subparserKind.h"
 
 struct jms_parser_varDecl
 {
+    // "just trust me bro" class ID. what can I say, this is raw
+    //      C after all.
+    jms_subparserKind
+        kind;
+    
+    /**
+     * The precendence of this parser. Lower numbers
+     *  are higher precedence. Higher numbers are lower
+     *  precedence (i.e. 0 is the highest precedence).
+     */
+    i32
+        precedence;
+
     // reference to the main parser object for
     //  this translation unit
     JMS_BORROWED_PTR(jms_parser) parent;
@@ -14,7 +28,10 @@ JMS_XFER_PTR(jms_parser_varDecl)
 jms_parser_varDecl_init(JMS_BORROWED_PTR(jms_parser) parentParser)
 {
     jms_parser_varDecl* self = malloc(sizeof(jms_parser_varDecl));
+    
     self->parent = parentParser;
+    self->canMatchRuleAtThisLocation = jms_parser_varDecl_canMatchRuleAtThisLocation;
+
     return self;
 }
 

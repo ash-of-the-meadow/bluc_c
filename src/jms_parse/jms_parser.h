@@ -5,6 +5,9 @@
 #include "jms_token.h"
 #include "../jms_utils/jms_resultType.h"
 
+struct jms_parserBase;
+typedef struct jms_parserBase jms_parserBase;
+
 struct jms_parser;
 typedef struct jms_parser jms_parser;
 
@@ -35,13 +38,13 @@ JMS_BORROWED_PTR(jms_token) jms_parser_getCurToken(jms_parser* self);
  * @brief - Gets the precedence/binding-power of this parser/subparser. Lower values are
  *          higher priority. May be a negative value.
  */
-i32 jms_parser_getPrecedence(jms_parser* self);
+i32 jms_parser_getPrecedence(jms_parserBase* self);
 
 /**
  * @brief - Sets the precedence/binding-power of this parser/subparser. Lower values are
  *          higher priority. May be a negative value.
  */
-void jms_parser_setPrecedence(jms_parser* self, i32 precedence);
+void jms_parser_setPrecedence(jms_parserBase* self, i32 precedence);
 
 /**
  * @brief - Attempts to peek at the token in the given location. If the function fails,
@@ -52,5 +55,17 @@ void jms_parser_setPrecedence(jms_parser* self, i32 precedence);
  *              and data is returned, otherwise "failed" is set without data.
  */
 JMS_OWNED_PTR(jms_resultType) jms_parser_peek(jms_parser* self, i32 index);
+
+/**
+ * @brief Calls the vtable for this parser (or sub-parser) and checks
+ *  whether this current parser was able to match a grammar rule
+ *  at the current token index.
+ *
+ * Pre-condition: curTokenIndex points to the start of a potential variable declaration.
+ * 
+ * @param self The parser instance.
+ * @return true if a grammar rule can be parsed at this location.
+ */
+bool    jms_parser_canMatchRuleAtThisLocation(jms_parser* self);
 
 #endif

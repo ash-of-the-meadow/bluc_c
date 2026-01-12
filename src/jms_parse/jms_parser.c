@@ -1,26 +1,26 @@
 #include "jms_parser.h"
 #include "../jms_utils/jms_stdint.h"
+#include "jms_subparserKind.h"
 #include "jms_token.h"
 #include <stdlib.h>
 #include <stdio.h>
 #include "jms_statements/jms_parser_class.h"
 
-struct jms_parser
+struct jms_parserBase
 {
-    JMS_XFER_PTR(jms_vector)
-        tokens;
-    JMS_OWNED_PTR(jms_vector)
-        subParsers;
-    ui32
-        curTokenIndex;
+    // "just trust me bro" class ID. what can I say, this is raw
+    //      C after all.
+    jms_subparserKind
+        kind;
 
     /**
      * The precendence of this parser. Lower numbers
      *  are higher precedence. Higher numbers are lower
      *  precedence (i.e. 0 is the highest precedence).
      */
-    ui32
+    i32
         precedence;
+
 
     // ==== VTable below. ====
 
@@ -39,6 +39,18 @@ struct jms_parser
         canMatchRuleAtThisLocation, jms_parser* self);
         
     // ==== End of VTable ====
+};
+
+struct jms_parser
+{
+    jms_parserBase
+        base;
+    JMS_XFER_PTR(jms_vector)
+        tokens;
+    JMS_OWNED_PTR(jms_vector)
+        subParsers;
+    ui32
+        curTokenIndex;
 };
 
 static JMS_XFER_PTR(jms_vector) jms_parser_parseBase(jms_parser* self);
@@ -61,19 +73,21 @@ JMS_XFER_PTR(jms_parser)
         return NULL;
     }
 
+    self->base.kind = JMS_SUBPARSER_KIND_BASE;
+    
+    // The base parser itself should have the highest precedence.
+    self->base.precedence = -1;
+
     self->tokens = lexedTokens;
     self->subParsers = jms_vec_init(sizeof(jms_parser*));
     {
-        // TODO: add subparsers to the vector
+        // TODO: add all subparsers to the vector
         jms_parser_class *subParser = jms_parser_class_init(self);
 
         jms_vec_add(self->subParsers, subParser, (jms_vec_destructorDelegate)jms_parser_class_del);
     }
 
     self->curTokenIndex = 0;
-    
-    // The base parser itself should have the highest precedence.
-    self->precedence = -1;
 
     // Set the default vtable for this parser. If a sub-class
     //  overrides this, it will do so after this init function
@@ -201,4 +215,38 @@ JMS_OWNED_PTR(jms_resultType) jms_parser_peek(jms_parser* self, i32 index)
     }
 
     return jms_resultType_init_bool_voidPtr(true, token);
+}
+
+i32 jms_parser_getPrecedence(jms_parserBase* self)
+{
+    if (!self)
+    {
+        fprintf(stderr, "Error: Invalid parser.\n");
+        return 0;
+    }
+
+    return self->precedence;
+}
+
+void jms_parser_setPrecedence(jms_parserBase* self, i32 precedence)
+{
+    if (!self)
+    {
+        fprintf(stderr, "Error: Invalid parser.\n");
+        return;
+    }
+
+    self->precedence = precedence;
+}
+
+bool jms_parser_canMatchRuleAtThisLocation(jms_parser* self)
+{
+    if (!self)
+    {
+        fprintf(stderr, "Error: Invalid parser.\n");
+        return false;
+    }
+
+    // Call the canMatchRuleAtThisLocation function from the vtable
+    return self->canMatchRuleAtThisLocation(self);
 }

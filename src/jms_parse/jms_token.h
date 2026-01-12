@@ -7,15 +7,14 @@
 struct jms_token;
 typedef struct jms_token jms_token;
 
-jms_token*      jms_token_init      (jms_tokenType nodeType, char* text, JMS_BORROWED_PTR(jms_token) parent);
+jms_token*      jms_token_init      (ui32 lineNum, ui32 column, char* text);
 void            jms_token_del       (jms_token* self);
 
 /**
  * Get the source code/text for this token.
  */
-JMS_BORROWED_PTR(jms_str)       jms_token_getText     (jms_token* self);
-JMS_BORROWED_PTR(jms_vector)    jms_token_getChildren (jms_token* self);
-void                            jms_token_addChild    (jms_token* self, jms_token* child);
-jms_tokenType                   jms_token_getType     (jms_token* self);
+JMS_BORROWED_PTR(jms_str)       jms_token_getText    (jms_token* self);
+ui32                            jms_token_getLineNum (jms_token* self);
+ui32                            jms_token_getColumn  (jms_token* self);
 
 #endif
