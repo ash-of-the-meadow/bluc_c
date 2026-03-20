@@ -30,7 +30,7 @@ jms_parser_varDecl_init(JMS_BORROWED_PTR(jms_parser) parentParser)
     jms_parser_varDecl* self = malloc(sizeof(jms_parser_varDecl));
     
     self->parent = parentParser;
-    self->canMatchRuleAtThisLocation = jms_parser_varDecl_canMatchRuleAtThisLocation;
+    self->canMatchRuleAtThisLocation = &jms_parser_varDecl_canMatchRuleAtThisLocation;
 
     return self;
 }
