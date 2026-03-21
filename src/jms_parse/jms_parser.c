@@ -21,6 +21,9 @@ struct jms_parserBase
     i32
         precedence;
 
+    // reference to the main parser object for
+    //  this translation unit
+    JMS_BORROWED_PTR(jms_parser) parent;
 
     // ==== VTable below. ====
 
@@ -43,7 +46,7 @@ struct jms_parserBase
 
 struct jms_parser
 {
-    jms_parserBase
+    JMS_OWNED_PTR(jms_parserBase)
         base;
     JMS_XFER_PTR(jms_vector)
         tokens;
@@ -73,10 +76,18 @@ JMS_XFER_PTR(jms_parser)
         return NULL;
     }
 
-    self->base.kind = JMS_SUBPARSER_KIND_BASE;
+    self->base = (jms_parserBase*)malloc(sizeof(jms_parserBase));
+    if (!self->base)    {
+        fprintf(stderr, "Error: Failed to allocate memory for jms_parserBase.\n");
+        free(self);
+        return NULL;
+    }
+
+    self->base->kind = JMS_SUBPARSER_KIND_BASE;
     
     // The base parser itself should have the highest precedence.
-    self->base.precedence = -1;
+    self->base->precedence = -1;
+    self->base->parent = NULL; // The base parser has no "parser parent".
 
     self->tokens = lexedTokens;
     self->subParsers = jms_vec_init(sizeof(jms_parser*));
@@ -92,8 +103,8 @@ JMS_XFER_PTR(jms_parser)
     // Set the default vtable for this parser. If a sub-class
     //  overrides this, it will do so after this init function
     //  has run.
-    self->parse = &jms_parser_parseBase;
-    self->canMatchRuleAtThisLocation = &jms_parser_canParseRule;
+    self->base.parse = &jms_parser_parseBase;
+    self->base.canMatchRuleAtThisLocation = &jms_parser_canParseRule;
 
     return self;
 }
@@ -159,7 +170,7 @@ JMS_XFER_PTR(jms_vector) jms_parser_parse(jms_parser* self)
     }
 
     // Call the parse function from the vtable
-    return self->parse(self);
+    return self->base.parse(self);
 }
 
 ui32 jms_parser_getCurTokenIndex(jms_parser* self)
@@ -248,5 +259,5 @@ bool jms_parser_canMatchRuleAtThisLocation(jms_parser* self)
     }
 
     // Call the canMatchRuleAtThisLocation function from the vtable
-    return self->canMatchRuleAtThisLocation(self);
+    return self->base.canMatchRuleAtThisLocation(self);
 }

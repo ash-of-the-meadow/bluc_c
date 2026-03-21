@@ -5,6 +5,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include "../jms_utils/jms_ptr_annotations.h"
+#include "jms_reflection/jms_typeInfo.h"
 
 struct jms_object;
 typedef struct jms_object jms_object;
@@ -30,6 +31,9 @@ void jms_object_del(JMS_OWNED_PTR(jms_object) self);
  */
 JMS_BORROWED_PTR(jms_object) jms_object_base(JMS_BORROWED_PTR(jms_object) self);
 
-JMS_BORROWED_PTR(jms_object) jms_typeof(JMS_BORROWED_PTR(jms_object) self);
+/**
+ * @brief returns the type of the object
+ */
+JMS_BORROWED_PTR(jms_typeInfo) jms_typeof(JMS_BORROWED_PTR(jms_object) self);
 
 #endif // JMS_OBJECT_H

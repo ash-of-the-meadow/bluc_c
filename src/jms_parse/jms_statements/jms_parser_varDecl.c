@@ -3,6 +3,8 @@
 
 struct jms_parser_varDecl
 {
+    jms_parserBase* base;
+
     // "just trust me bro" class ID. what can I say, this is raw
     //      C after all.
     jms_subparserKind
@@ -16,9 +18,7 @@ struct jms_parser_varDecl
     i32
         precedence;
 
-    // reference to the main parser object for
-    //  this translation unit
-    JMS_BORROWED_PTR(jms_parser) parent;
+    
 
     // Add any var-decl specific fields here if needed
 
@@ -29,7 +29,7 @@ jms_parser_varDecl_init(JMS_BORROWED_PTR(jms_parser) parentParser)
 {
     jms_parser_varDecl* self = malloc(sizeof(jms_parser_varDecl));
     
-    self->parent = parentParser;
+    self->base.parent = parentParser;
     self->canMatchRuleAtThisLocation = &jms_parser_varDecl_canMatchRuleAtThisLocation;
 
     return self;

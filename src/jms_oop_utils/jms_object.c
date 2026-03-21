@@ -185,3 +185,8 @@ JMS_BORROWED_PTR(jms_object) jms_object_base(JMS_BORROWED_PTR(jms_object) self)
 
     return self->base;
 }
+
+JMS_BORROWED_PTR(jms_typeInfo) jms_typeof(JMS_BORROWED_PTR(jms_object) self)
+{
+    return jms_object_findElementInMetadata(self->typeName);
+}
