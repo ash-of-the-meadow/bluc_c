@@ -5,6 +5,8 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include "jms_statements/jms_parser_class.h"
+#include "jms_statements/jms_parser_stmt.h"
+#include "jms_subparserKind.h"
 
 struct jms_parserBase
 {
@@ -40,6 +42,13 @@ struct jms_parserBase
      */
     JMS_OWNED_FPTR(bool,
         canMatchRuleAtThisLocation, jms_parser* self);
+
+    /**
+     * @brief Virtual destructor for this parser. Should free any resources owned by this parser, but should NOT free the parent parser or any of the tokens (since those are managed externally).
+     *          Call jms_parserBase_del to access this virtual destructor.
+     */
+    JMS_OWNED_FPTR(void,
+        jms_parser_del, jms_parserBase* self);
         
     // ==== End of VTable ====
 };
@@ -50,7 +59,7 @@ struct jms_parser
         base;
     JMS_XFER_PTR(jms_vector)
         tokens;
-    JMS_OWNED_PTR(jms_vector)
+    JMS_OWNED_PTR(jms_vector) // jms_vector of jms_parserBase* (sub-parsers)
         subParsers;
     ui32
         curTokenIndex;
@@ -59,6 +68,8 @@ struct jms_parser
 static JMS_XFER_PTR(jms_vector) jms_parser_parseBase(jms_parser* self);
 
 static bool jms_parser_canParseRule(jms_parser* self);
+static void jms_parser_registerAllSubParsers(jms_parser* self);
+static JMS_XFER_PTR(jms_resultType) jms_parser_findSubparser_byKind(jms_parser* self, jms_subparserKind kind);
 
 JMS_XFER_PTR(jms_parser)
     jms_parser_init(    JMS_BORROWED_PTR(jms_vector) lexedTokens)
@@ -103,10 +114,58 @@ JMS_XFER_PTR(jms_parser)
     // Set the default vtable for this parser. If a sub-class
     //  overrides this, it will do so after this init function
     //  has run.
-    self->base.parse = &jms_parser_parseBase;
-    self->base.canMatchRuleAtThisLocation = &jms_parser_canParseRule;
+    self->base->parse = &jms_parser_parseBase;
+    self->base->canMatchRuleAtThisLocation = &jms_parser_canParseRule;
 
     return self;
+}
+
+static JMS_XFER_PTR(jms_resultType) jms_parser_findSubparser_byKind(jms_parser* self, jms_subparserKind kind)
+{
+    JMS_XFER_PTR(jms_resultType) result = NULL;
+
+    // ==== sentinel conditions ====
+    if (!self || !self->subParsers)
+    {
+        fprintf(stderr, "Error: Invalid parser or subParsers.\n");
+        result = jms_resultType_init_bool(false);
+        return result;
+    }
+    // ==== end of sentinel conditions ====
+
+    
+    i32 subParserCount = jms_vec_elemCount(self->subParsers);
+    for (i32 i = 0; i < subParserCount; ++i)
+    {
+        jms_parserBase* subParser = (jms_parserBase*)jms_vec_get(self->subParsers, i);
+        if (subParser && subParser->kind == kind)
+        {
+            result->succeeded = true;
+            result->data = subParser;
+
+            break;
+        }
+    }
+
+    // Not found
+    return result;
+}
+
+/**
+ * @brief Adds an instance of each sub-parser to the vector of sub-parsers for this parser.
+ */
+static void jms_parser_registerAllSubParsers(jms_parser* self)
+{
+    if (!self)
+    {
+        fprintf(stderr, "Error: Invalid parser.\n");
+        return;
+    }
+
+    // technically an "owned" pointer since the subparsers will be freed when the parser is freed, but we don't want to
+    jms_parser_class *classParser = jms_parser_class_init(self);
+    jms_parser_stmt *stmtParser = jms_parser_stmt_init(self);
+
 }
 
 void jms_parser_del(jms_parser* self)
@@ -116,7 +175,13 @@ void jms_parser_del(jms_parser* self)
         return;
     }
 
-    // Assuming jms_vector is managed externally and should not be freed here.
+    jms_parser_class* classParser = (jms_parser_class*)jms_vec_get(self->subParsers, jms_parser_findSubparser_byKind(self, JMS_SUBPARSER_KIND_CLASS_DECL));
+    jms_parser_stmt* stmtParser = (jms_parser_stmt*)jms_vec_get(self->subParsers, jms_parser_findSubparser_byKind(self, JMS_SUBPARSER_KIND_STMT));
+
+    jms_parser_class_del(classParser);
+    jms_parser_stmt_del(stmtParser);
+
+    // self.tokens is managed externally and should not be freed here.
     free(self);
 }
 
@@ -127,7 +192,8 @@ static bool jms_parser_canParseRule(jms_parser* self)
 }
 
 /**
- * @brief Parses the tokens in the lexedTokens of the parser.
+ * @brief The fundamental parsing method; parses the tokens in the lexedTokens vector of the parser by handing
+ *          them off to the appropriate sub-parsers based on the grammar rules.
  * 
  * @param self The parser instance.
  * @return A vector jms_token representing the abstract syntax tree.
@@ -170,7 +236,7 @@ JMS_XFER_PTR(jms_vector) jms_parser_parse(jms_parser* self)
     }
 
     // Call the parse function from the vtable
-    return self->base.parse(self);
+    return self->base->parse(self);
 }
 
 ui32 jms_parser_getCurTokenIndex(jms_parser* self)
@@ -259,5 +325,5 @@ bool jms_parser_canMatchRuleAtThisLocation(jms_parser* self)
     }
 
     // Call the canMatchRuleAtThisLocation function from the vtable
-    return self->base.canMatchRuleAtThisLocation(self);
+    return self->base->canMatchRuleAtThisLocation(self);
 }

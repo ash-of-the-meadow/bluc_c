@@ -4,7 +4,7 @@
 struct jms_resultType
 {
     bool didSucceed;
-    JMS_OWNED_PTR(void)     data;
+    JMS_XFER_PTR(void)      data;
     JMS_OWNED_PTR(jms_str)  errorMessage;
 };
 

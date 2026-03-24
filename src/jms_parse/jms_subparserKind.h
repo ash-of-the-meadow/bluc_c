@@ -11,6 +11,7 @@ typedef enum
     JMS_SUBPARSER_KIND_FUNC_DECL,
     JMS_SUBPARSER_KIND_CLASS_DECL,
     JMS_SUBPARSER_KIND_EXPRESSION,
+    JMS_SUBPARSER_KIND_STMT,
     // Add more subparser kinds as needed
 } jms_subparserKind;
 

@@ -47,7 +47,8 @@ class Person
 }
 
 // restrict type of TData and TAssoc to be descendants of a pointer type
-//  (Ptr is a reserved type used to reference pointer types)
+//  (Ptr is a reserved type used to reference pointer types).
+//  ( ,, is a type group, as in "TData and TAssoc are of the same type, Ptr"
 class BasicAssocVector<TData,, TAssoc : Ptr>
 {
     private
@@ -90,4 +91,4 @@ class BasicAssocVector<TData,, TAssoc : Ptr>
 
     // .. other class methods here .. //
 
-}   //} <-- fix basic txt-file brace-matching of visual studio code
+}   //} <-- fix basic txt-file brace-matching of visual studio code. (ignore this, it's just for my personal benefit)

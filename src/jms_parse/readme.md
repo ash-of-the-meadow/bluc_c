@@ -11,7 +11,6 @@ This document is intended to guide the development of the parser, and to keep ge
 #### Parser Advancement
 3. Only advance the current token if you call out to a function matching the criteria in point #1 or #2
     1. Otherwise, just use `peek` functions to check the state
-1. 
 
 ## Statement Precedence Table
 | Precedence | Description | Subparser Filename |
