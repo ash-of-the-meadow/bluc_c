@@ -27,16 +27,22 @@ of this type declared inside of a class field must be deallocated in a destructo
 
 1. `unchecked*` - A pointer that is not subject to any ownership semantics. It is simply a raw pointer, and it is the responsibility of the programmer to ensure that it is used correctly. This pointer type is part of a larger "unchecked" subsystem, which includes other features that are not subject to ownership semantics.
 
-    `unchecked` pointers can be used responsibly, but the type system and borrow checker cannot check the safety of said pointers -- hence they are "unchecked". They should only be used when necessary, but "necessary" is left to the programmer to decide. Don't use them everywhere.
+>`unchecked` pointers *can* be used responsibly, but the type system and borrow checker cannot check the safety of said pointers -- hence they are "unchecked". They should only be used when necessary, but "necessary" is left to the programmer to decide. Please, don't use them everywhere -- I made a whole ownership semantics and borrow checker system which should work in most cases.
 
 ### Syntax
 The syntax for declaring pointers with ownership semantics is as follows:
 ```c
-owned*      myOwnedPointer;
-borrowed*   myBorrowedPointer;
-xfer*       myXferPointer;
-unchecked*  myUncheckedPointer;
+owned*          myOwnedPointer;
+borrowed*       myBorrowedPointer;
+borrowed mut*   myBorrowedMutPointer;
+mut borrowed*   myMutBorrowedPointer;
+xfer*           myXferPointer;
+unchecked*      myUncheckedPointer;
 ```
+
+The mutability keyword, `mut`, may also be applied to the `borrowed*` type to allow for
+mutation of the pointer itself (i.e, the address it points to). For example, `mut borrowed*` is a pointer that does not own the memory it points to, but you can change
+what it's "borrowing". Once you do so, the original borrow is ended, and the new borrow is the one that must not outlive the memory it points to, else it's a compiler error. The syntax for this is as follows:
 
 ## Borrow Checker & Ownership Semantics ***WIP***
 Borrow checking and ownership semantics are a crucial part of memory safety in BluC, and they are closely intertwined. The borrow checker is responsible for enforcing the rules of ownership  semantics, and ensuring that pointers are used correctly according to their ownership type.
@@ -64,13 +70,25 @@ This pointer type is intended for use when a pointer needs to reference memory o
 
 It is not responsible for deallocating the memory it points to -- to do so is a compiler error. This pointer type also must not outlive the memory it points to, else it's a compiler error. Borrowed pointers cannot be transferred via an `xfer` pointer, but they may themselves be borrowed -- simply `return` them, pass them to another function, or assign them to another borrowed pointer.
 
+#### `borrowed mut*` pointers
+This pointer type is the same as a `borrowed` pointer, but it allows for mutation of the memory it points to. It is still not responsible for deallocating the memory it points to, and it still must not outlive the memory it points to, else it's a compiler error. Borrowed mut pointers cannot be transferred via an `xfer` pointer, but they may themselves be borrowed by a new `borrowed mut*`. The lifetime of the reborrowed pointer must not outlive the original borrowed pointer, else it's a compiler error.
+
+This should not be confused with [the following syntax](#mut-borrowed-pointers), which is a different design for borrowed pointers whose address can be mutated.
+
+#### `mut borrowed*` pointers
+This pointer type is the same as a `borrowed` pointer, but it allows for mutation of the pointer itself -- that is, the address that the pointer points to can be changed. It is still not responsible for deallocating the memory it points to, and it still must not outlive the memory it points to, else it's a compiler error. Mut borrowed pointers cannot be transferred via an `xfer` pointer, but they may themselves be borrowed by a new `mut borrowed*`. The lifetime of the reborrowed pointer must not outlive the original borrowed pointer, else it's a compiler error.
+
 #### `xfer` pointers
 This pointer type is intended for use during move operations, when a pointer is being transferred from one owner to another. It is a temporary state that a pointer can be in, and it is not responsible for deallocating the memory it points to.
 
 This pointer type must be transferred out of the current scope, else it's a compiler error. If this pointer is declared as a class field, then the context owning the class must free it (unless it is transferred again), else it's a compiler error. This pointer type cannot be owned or borrowed. You may transfer it whilst it is in an xfer state -- simply pass it to another function or assign it to another xfer pointer -- but you must not access the original pointer after transferring it, else it's a compiler error. The original "xfer" pointer is essentially "moved" (or transferred) to the new xfer pointer, and the original pointer is no longer valid.
 
 #### `unchecked` pointers
- This pointer type is intended for use in low-level code, such as interfacing with C libraries, or in performance-critical code where the overhead of ownership semantics is not desirable. It is the programmer's responsibility to ensure that these pointers are used correctly, as the compiler will not enforce any rules on them. This pointer type should be used sparingly, and only when absolutely necessary, as it can easily lead to memory safety issues if used incorrectly.
+This pointer type is intended for use in low-level code, such as interfacing with C libraries, or in performance-critical code where the overhead of ownership semantics is not desirable. Ownership semantics and borrow checking are no-cost abstractions; i.e., they are compile-time costs.
+
+However, for example, let's say you want a self-referential struct with interior pointers. With a borrow-checked and memory safe design, you'd be forced to use a class instead, and incur said overheads from living on the heap. In such cases, `unchecked` pointers can be used to bypass the ownership semantics and borrow checking, thus having your struct and your interior pointers too -- but they come with the risk of memory safety issues if used incorrectly.
+
+It is the programmer's responsibility to ensure that these pointers are used correctly, as the compiler will not enforce any rules on them. This pointer type should be used sparingly, and only when absolutely necessary, as it can lead to memory safety issues and "broken windows" if used incorrectly.
 
 
 
@@ -81,7 +99,7 @@ Similarly to [alloc](#allocating-memory), "free" is a keyword instead of a funct
 
 Unless specified by the [nofree](#nofree-attribute-wip) attribute, every function and method in BluC has a special parameter called "dealloc", which is a pointer to a function that can be used to deallocate memory. This allows for flexible memory management, as the caller can choose how to deallocate memory.
 
-Functions can still choose which deallocator they want to use, by simply calling it directly instead of "free". For example, to free something allocated on the heap, you can call "stdlib.free_heap(ptr)" instead of "free ptr". This allows for more control over memory management, whilst also simplifying it in most use cases.
+A function/method can still choose which deallocator they want to use, by simply calling it directly instead of "free". For example, to free something allocated on the heap, you can call "stdlib.free_heap(ptr)" instead of "free ptr". This allows for more control over memory management, whilst also simplifying it in most use cases.
 
 #### Syntax
 The syntax for "free" is as follows.
@@ -102,6 +120,11 @@ free bobsHouse;
 To free a pointer with a specific deallocator, from the function's calling context:
 ```c
 free <pointer> using <deallocator>;
+```
+
+e.g, to free a pointer using the heap deallocator from the calling context:
+```c
+free bobsHouse using stdlib.memory.heapFree;
 ```
 
 ## Memory-related attributes ***WIP***
