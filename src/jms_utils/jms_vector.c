@@ -304,7 +304,8 @@ void jms_vec_rem(jms_vector* self, int32_t index)
     }
 
     // set data to NULL *after* array shrink in case
-    //  realloc gives it a new value
+    //  realloc assigns a new memory location, giving
+    //  it a junk value
     self->elements[index].data = NULL;
     self->lastElemIndex--;
 }
