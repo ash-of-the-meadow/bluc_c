@@ -41,8 +41,8 @@ unchecked*      myUncheckedPointer;
 ```
 
 The mutability keyword, `mut`, may also be applied to the `borrowed*` type to allow for
-mutation of the pointer itself (i.e, the address it points to). For example, `mut borrowed*` is a pointer that does not own the memory it points to, but you can change
-what it's "borrowing". Once you do so, the original borrow is ended, and the new borrow is the one that must not outlive the memory it points to, else it's a compiler error. The syntax for this is as follows:
+mutation of the pointer itself (i.e, the address it points to). A `mut borrowed*` does not own the memory it points to, but you can change
+what it's "borrowing". Once you do so, the original borrow is ended, and the new borrow is the one that must not outlive the memory it points to, else it's a compiler error.
 
 ## Borrow Checker & Ownership Semantics ***WIP***
 Borrow checking and ownership semantics are a crucial part of memory safety in BluC, and they are closely intertwined. The borrow checker is responsible for enforcing the rules of ownership  semantics, and ensuring that pointers are used correctly according to their ownership type.
