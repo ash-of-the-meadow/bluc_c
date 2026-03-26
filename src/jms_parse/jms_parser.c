@@ -122,27 +122,30 @@ JMS_XFER_PTR(jms_parser)
 
 static JMS_XFER_PTR(jms_resultType) jms_parser_findSubparser_byKind(jms_parser* self, jms_subparserKind kind)
 {
-    JMS_XFER_PTR(jms_resultType) result = NULL;
-
     // ==== sentinel conditions ====
     if (!self || !self->subParsers)
     {
-        fprintf(stderr, "Error: Invalid parser or subParsers.\n");
-        result = jms_resultType_init_bool(false);
-        return result;
+        return jms_resultType_init_str( jms_str_init("Error: Invalid parser or subParsers.\n"));
     }
     // ==== end of sentinel conditions ====
 
+
+    JMS_XFER_PTR(jms_str) defaultMsg = jms_str_init("Subparser kind '");
+    
+    jms_str_append_s (defaultMsg, jms_subparserKind_toStr(kind));
+    jms_str_append_cs(defaultMsg, "' not found.");
+
+    JMS_XFER_PTR(jms_resultType) result = jms_resultType_init_str(defaultMsg);
     
     i32 subParserCount = jms_vec_elemCount(self->subParsers);
     for (i32 i = 0; i < subParserCount; ++i)
     {
-        jms_parserBase* subParser = (jms_parserBase*)jms_vec_get(self->subParsers, i);
+        JMS_BORROWED_PTR(jms_parserBase) subParser
+            = (jms_parserBase*)jms_vec_get(self->subParsers, i);
+
         if (subParser && subParser->kind == kind)
         {
-            result->succeeded = true;
-            result->data = subParser;
-
+            result = jms_resultType_init_voidPtr(subParser);
             break;
         }
     }
@@ -175,8 +178,10 @@ void jms_parser_del(jms_parser* self)
         return;
     }
 
-    jms_parser_class* classParser = (jms_parser_class*)jms_vec_get(self->subParsers, jms_parser_findSubparser_byKind(self, JMS_SUBPARSER_KIND_CLASS_DECL));
-    jms_parser_stmt* stmtParser = (jms_parser_stmt*)jms_vec_get(self->subParsers, jms_parser_findSubparser_byKind(self, JMS_SUBPARSER_KIND_STMT));
+    // var classSubparser = self.findSubparserByKind(jms.SubparserKind.CLASS_DECL).data;
+    // var stmtSubparser = self.findSubparserByKind(jms.SubparserKind.STMT).data;
+        jms_parser_class* classParser = (jms_parser_class*) jms_resultType_getData((jms_resultType*) jms_parser_findSubparser_byKind(self, JMS_SUBPARSER_KIND_CLASS_DECL));
+        jms_parser_stmt* stmtParser = (jms_parser_stmt*)    jms_resultType_getData((jms_resultType*) jms_parser_findSubparser_byKind(self, JMS_SUBPARSER_KIND_STMT));
 
     jms_parser_class_del(classParser);
     jms_parser_stmt_del(stmtParser);
@@ -291,7 +296,7 @@ JMS_OWNED_PTR(jms_resultType) jms_parser_peek(jms_parser* self, i32 index)
         return jms_resultType_init_bool(false);
     }
 
-    return jms_resultType_init_bool_voidPtr(true, token);
+    return jms_resultType_init_voidPtr( token);
 }
 
 i32 jms_parser_getPrecedence(jms_parserBase* self)
