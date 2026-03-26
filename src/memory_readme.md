@@ -113,7 +113,7 @@ owned* bobsAddress = new House(name: "bobsHouse", numRooms: 5, alloc: stdlib.mem
 
 ...
 
-// our call to free
+// our call to "free". bob forgot to pay his mortgage one too many times. now we need to demolish his house, and free the memory it occupies. poor bob :(
 free bobsHouse;
 ```
 
