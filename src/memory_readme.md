@@ -2,7 +2,7 @@
 ## Index
 1. [Notes about this readme](#notes-about-this-readme)
 1. [Pointers](#pointers)
-    1. [Ownership semantics](#ownership-semantics)
+    1. [Ownership semantics](#ownership-semantics-wip)
 1. [Borrow Checker & Ownership semantics](#borrow-checker--ownership-semantics-wip)
 1. [Memory Allocation & deallocation](#memory-allocation--deallocation-wip)
     1. [alloc](#allocating-memory-wip)
@@ -15,7 +15,7 @@ This document is a "living document", meaning that it will be updated and edited
 The goal of this document is to have a single source of truth for all things related to memory management in BluC (other than "my brain"), and to keep track of the design process as it unfolds.
 
 ## Pointers
-As pointers are a fundamental part of memory management, and a frequent source of bugs, all pointers (except those declared [unchecked](#unchecked-pointers)) must be declared with the appropriate [ownership semantics](#ownership-semantics).
+As pointers are a fundamental part of memory management, and a frequent source of bugs, all pointers (except those declared [unchecked](#unchecked-pointers)) must be declared with the appropriate [ownership semantics](#ownership-semantics-wip).
 
 To summarize, there are three ownership-based pointer types in BluC, and one "unchecked" pointer type which is itself part of a larger "unchecked" subsystem. Said types are as follows:
 1. `owned*` - A pointer that owns the memory it points to. Whichever scope the pointer is declared in, it is responsible for deallocating the memory it points to when it goes out of scope. Pointers
