@@ -64,13 +64,6 @@
         return self;
     }
 
-    void jms_parserBase_del(JMS_OWNED_PTR(jms_parserBase) self)
-    {
-        // no cleanup code needed, but function was
-        //  created to future-proof current code,
-        //  in case we add a destructor in the future.
-    }
-
 // }... // class jms_parserBase
 
 struct jms_parser
@@ -122,12 +115,7 @@ JMS_XFER_PTR(jms_parser)
 
     self->tokens = lexedTokens;
     self->subParsers = jms_vec_init(sizeof(jms_parser*));
-    {
-        // TODO: add all subparsers to the vector
-        jms_parser_class *subParser = jms_parser_class_init(self);
-
-        jms_vec_add(self->subParsers, subParser, (jms_vec_destructorDelegate)jms_parser_class_del);
-    }
+    jms_parser_registerAllSubParsers(self);
 
     self->curTokenIndex = 0;
 
@@ -184,11 +172,12 @@ static void jms_parser_registerAllSubParsers(jms_parser* self)
         fprintf(stderr, "Error: Invalid parser.\n");
         return;
     }
-
-    // technically an "owned" pointer since the subparsers will be freed when the parser is freed, but we don't want to
+    
     jms_parser_class *classParser = jms_parser_class_init(self);
     jms_parser_stmt *stmtParser = jms_parser_stmt_init(self);
-
+   
+    jms_vec_add(self->subparsers, classParser);
+    jms_vec_add(self->subparsers, stmtParser);
 }
 
 void jms_parser_del(jms_parser* self)
@@ -198,13 +187,8 @@ void jms_parser_del(jms_parser* self)
         return;
     }
 
-    // var classSubparser = self.findSubparserByKind(jms.SubparserKind.CLASS_DECL).data;
-    // var stmtSubparser = self.findSubparserByKind(jms.SubparserKind.STMT).data;
-        jms_parser_class* classParser = (jms_parser_class*) jms_resultType_getData((jms_resultType*) jms_parser_findSubparser_byKind(self, JMS_SUBPARSER_KIND_CLASS_DECL));
-        jms_parser_stmt* stmtParser = (jms_parser_stmt*)    jms_resultType_getData((jms_resultType*) jms_parser_findSubparser_byKind(self, JMS_SUBPARSER_KIND_STMT));
-
-    jms_parser_class_del(classParser);
-    jms_parser_stmt_del(stmtParser);
+    jms_vec_del(self->subparsers);
+    
     jms_parserBase_del(self->base);
 
     // self.tokens is managed externally and should not be freed here.
