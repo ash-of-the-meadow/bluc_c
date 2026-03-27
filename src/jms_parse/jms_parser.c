@@ -2,56 +2,76 @@
 #include "../jms_utils/jms_stdint.h"
 #include "jms_subparserKind.h"
 #include "jms_token.h"
+#include <stdint.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include "jms_statements/jms_parser_class.h"
 #include "jms_statements/jms_parser_stmt.h"
 #include "jms_subparserKind.h"
 
-struct jms_parserBase
-{
-    // "just trust me bro" class ID. what can I say, this is raw
-    //      C after all.
-    jms_subparserKind
-        kind;
+// class jms_parserBase {...
+    struct jms_parserBase
+    {
+        // "just trust me bro" class ID. what can I say, this is raw
+        //      C after all.
+        jms_subparserKind
+            kind;
 
-    /**
-     * The precendence of this parser. Lower numbers
-     *  are higher precedence. Higher numbers are lower
-     *  precedence (i.e. 0 is the highest precedence).
-     */
-    i32
-        precedence;
+        /**
+        * The precendence of this parser. Lower numbers
+        *  are higher precedence. Higher numbers are lower
+        *  precedence (i.e. 0 is the highest precedence).
+        */
+        i32
+            precedence;
 
-    // reference to the main parser object for
-    //  this translation unit
-    JMS_BORROWED_PTR(jms_parser) parent;
+        // reference to the main parser object for
+        //  this translation unit
+        JMS_BORROWED_PTR(jms_parser) parent;
 
-    // ==== VTable below. ====
+        // ==== VTable below. ====
 
-    /**
-     * @brief Parses as many tokens as possible to finish matching
-     *  this parser's grammar rule.
-     */
-    JMS_OWNED_FPTR(JMS_XFER_PTR(jms_vector),
-        parse, jms_parser* self);
-    
-    /**
-     * @brief Returns whether this current parser was able to match a
-     *  grammar rule at the current token index.
-     */
-    JMS_OWNED_FPTR(bool,
-        canMatchRuleAtThisLocation, jms_parser* self);
-
-    /**
-     * @brief Virtual destructor for this parser. Should free any resources owned by this parser, but should NOT free the parent parser or any of the tokens (since those are managed externally).
-     *          Call jms_parserBase_del to access this virtual destructor.
-     */
-    JMS_OWNED_FPTR(void,
-        jms_parser_del, jms_parserBase* self);
+        /**
+        * @brief Parses as many tokens as possible to finish matching
+        *  this parser's grammar rule.
+        */
+        JMS_OWNED_FPTR(JMS_XFER_PTR(jms_vector),
+            parse, jms_parser* self);
         
-    // ==== End of VTable ====
-};
+        /**
+        * @brief Returns whether this current parser was able to match a
+        *  grammar rule at the current token index.
+        */
+        JMS_OWNED_FPTR(bool,
+            canMatchRuleAtThisLocation, jms_parserBase* self);
+            
+        // ==== End of VTable ====
+
+    };
+
+    JMS_XFER_PTR(jms_parserBase) jms_parserBase_init()
+    {
+        JMS_XFER_PTR(jms_parserBase) self = malloc(sizeof(jms_parserBase));
+
+        // initialize default values, so it will be very obvious
+        //  if we forget to set these later on.
+        self->kind       = JMS_SUBPARSER_KIND_UNKNOWN;
+        self->precedence = INT32_MAX;
+        self->parent     = NULL;
+        self->parse      = NULL;
+        self->canMatchRuleAtThisLocation = NULL;
+
+        return self;
+    }
+
+    void jms_parserBase_del(JMS_OWNED_PTR(jms_parserBase) self)
+    {
+        // no cleanup code needed, but function was
+        //  created to future-proof current code,
+        //  in case we add a destructor in the future.
+    }
+
+// }... // class jms_parserBase
 
 struct jms_parser
 {
@@ -67,7 +87,7 @@ struct jms_parser
 
 static JMS_XFER_PTR(jms_vector) jms_parser_parseBase(jms_parser* self);
 
-static bool jms_parser_canParseRule(jms_parser* self);
+static bool jms_parser_canParseRule(jms_parserBase* self);
 static void jms_parser_registerAllSubParsers(jms_parser* self);
 static JMS_XFER_PTR(jms_resultType) jms_parser_findSubparser_byKind(jms_parser* self, jms_subparserKind kind);
 
@@ -185,12 +205,13 @@ void jms_parser_del(jms_parser* self)
 
     jms_parser_class_del(classParser);
     jms_parser_stmt_del(stmtParser);
+    jms_parserBase_del(self->base);
 
     // self.tokens is managed externally and should not be freed here.
     free(self);
 }
 
-static bool jms_parser_canParseRule(jms_parser* self)
+static bool jms_parser_canParseRule(jms_parserBase* self)
 {
     // The base parser should always be able to match a rule.
     return true;
@@ -321,7 +342,7 @@ void jms_parser_setPrecedence(jms_parserBase* self, i32 precedence)
     self->precedence = precedence;
 }
 
-bool jms_parser_canMatchRuleAtThisLocation(jms_parser* self)
+bool jms_parser_canMatchRuleAtThisLocation(jms_parserBase* self)
 {
     if (!self)
     {
@@ -330,5 +351,5 @@ bool jms_parser_canMatchRuleAtThisLocation(jms_parser* self)
     }
 
     // Call the canMatchRuleAtThisLocation function from the vtable
-    return self->base->canMatchRuleAtThisLocation(self);
+    return self->canMatchRuleAtThisLocation(self);
 }

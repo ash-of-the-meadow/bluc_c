@@ -1,7 +1,6 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include "jms_token.h"
-#include "jms_tokenType.h"
 #include "../jms_utils/jms_str.h"
 
 struct jms_token

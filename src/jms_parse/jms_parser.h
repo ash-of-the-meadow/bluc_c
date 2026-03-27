@@ -2,6 +2,7 @@
 #define JMS_PARSER_H
 
 #include "../jms_utils/jms_vector.h"
+#include "jms_subparserKind.h"
 #include "jms_token.h"
 #include "../jms_utils/jms_resultType.h"
 
@@ -12,12 +13,20 @@
     JMS_XFER_PTR(jms_parserBase) jms_parserBase_init();
     void jms_parserBase_del(JMS_OWNED_PTR(jms_parserBase) self);
 
+    typedef JMS_OWNED_FPTR(bool, jms_parserBase_delegate_canMatch, jms_parserBase* self);
+
     /**
      * @brief Sets the parent parser for this parser/subparser. The parent parser is the parser that
      *  owns this parser as a subparser. This is used to allow subparsers to access shared state
      *  from the main parser, such as the vector of tokens and the current token index.
      */
     void jms_parserBase_setParent(JMS_OWNED_PTR(jms_parserBase) self, JMS_BORROWED_PTR(jms_parserBase) parent);
+
+    /**
+     * @brief Gets the parent parser for this parser/subparser. The "parent parser" is the parser which
+     *          owns this subparser.
+     */
+    JMS_BORROWED_PTR(jms_parserBase) jms_parserBase_getParent(jms_parserBase* self);
 
     /**
      * @brief Calls the parse function for this parser/subparser, which should attempt to parse
@@ -39,10 +48,15 @@
      */
     bool jms_parserBase_canMatchRuleAtThisLocation(JMS_BORROWED_PTR(jms_parserBase) self);
 
+    /**
+     * @brief Sets the override/instance for the virtual function "canMatchRule..." to the function defined by <b>overridingFunction</b>.
+     */
+    void jms_parserBase_vtable_setCanMatchRule(JMS_BORROWED_PTR(jms_parserBase) self, jms_parserBase_delegate_canMatch overridingFunction);
+
 // }... // class jms_parserBase ====
 
 
-// class jms_parser {...
+// class jms_parser extends jms_parserBase {...
     struct jms_parser;
     typedef struct jms_parser jms_parser;
 
@@ -101,7 +115,7 @@
      * @param self The parser instance.
      * @return true if a grammar rule can be parsed at this location.
      */
-    bool    jms_parser_canMatchRuleAtThisLocation(jms_parser* self);
+    bool    jms_parser_canMatchRuleAtThisLocation(jms_parserBase* self);
 // }... // class jms_parser ====
 
 #endif

@@ -2,7 +2,6 @@
 #define JMS_token_H
 #include "../jms_utils/jms_vector.h"
 #include "../jms_utils/jms_str.h"
-#include "jms_tokenType.h"
 
 struct jms_token;
 typedef struct jms_token jms_token;
